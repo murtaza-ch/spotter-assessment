@@ -1,0 +1,463 @@
+openapi: 3.0.3
+info:
+  title: Spotter API
+  version: 0.1.0
+  description: Weather-aware truck routing with TomTom and Open-Meteo.
+paths:
+  /geocode/:
+    get:
+      operationId: geocode
+      parameters:
+      - in: query
+        name: q
+        schema:
+          type: string
+        required: true
+      tags:
+      - Locations
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeocodingResponse'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '502':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+  /health/:
+    get:
+      operationId: get_health
+      description: Report API liveness without requiring the database or upstream
+        providers.
+      tags:
+      - System
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+          description: ''
+  /plans/:
+    post:
+      operationId: create_plan
+      tags:
+      - Planning
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TripRequestRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanResponse'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '502':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+  /plans/{plan_id}/forecast/:
+    get:
+      operationId: get_plan_forecast
+      parameters:
+      - in: path
+        name: plan_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - Planning
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForecastResponse'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '502':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+components:
+  schemas:
+    Checkpoint:
+      type: object
+      properties:
+        index:
+          type: integer
+        coordinates:
+          type: array
+          items:
+            type: number
+            format: double
+          maxItems: 2
+          minItems: 2
+        distance_miles:
+          type: number
+          format: double
+        arrival_at:
+          type: string
+          format: date-time
+        risk:
+          $ref: '#/components/schemas/RiskLevelEnum'
+        wind_mph:
+          type: number
+          format: double
+          nullable: true
+        rain_in:
+          type: number
+          format: double
+          nullable: true
+        snow_in:
+          type: number
+          format: double
+          nullable: true
+        temperature_f:
+          type: number
+          format: double
+          nullable: true
+      required:
+      - arrival_at
+      - coordinates
+      - distance_miles
+      - index
+      - rain_in
+      - risk
+      - snow_in
+      - temperature_f
+      - wind_mph
+    ErrorResponse:
+      type: object
+      properties:
+        detail:
+          type: string
+        code:
+          type: string
+        fields: {}
+      required:
+      - detail
+    ForecastResponse:
+      type: object
+      properties:
+        coordinates:
+          type: array
+          items:
+            type: array
+            items:
+              type: number
+              format: double
+            maxItems: 2
+            minItems: 2
+        hours:
+          type: array
+          items:
+            type: string
+            format: date-time
+        risk_frames:
+          type: array
+          items:
+            type: array
+            items:
+              enum:
+              - -1
+              - 0
+              - 1
+              - 2
+              - 3
+              - 4
+              type: integer
+              description: |-
+                * `-1` - Unknown
+                * `0` - Low
+                * `1` - Moderate
+                * `2` - High
+                * `3` - Severe
+                * `4` - No Travel
+        corridor_half_width_miles:
+          type: integer
+        warnings:
+          type: array
+          items:
+            type: string
+      required:
+      - coordinates
+      - corridor_half_width_miles
+      - hours
+      - risk_frames
+      - warnings
+    GeocodingResponse:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Place'
+      required:
+      - results
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/HealthStatusEnum'
+        service:
+          type: string
+      required:
+      - service
+      - status
+    HealthStatusEnum:
+      enum:
+      - ok
+      type: string
+      description: '* `ok` - ok'
+    Place:
+      type: object
+      properties:
+        label:
+          type: string
+        coordinates:
+          type: array
+          items:
+            type: number
+            format: double
+          maxItems: 2
+          minItems: 2
+      required:
+      - coordinates
+      - label
+    PlanResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        origin:
+          $ref: '#/components/schemas/Place'
+        destination:
+          $ref: '#/components/schemas/Place'
+        departure_at:
+          type: string
+          format: date-time
+        load_weight_lb:
+          type: integer
+        sample_interval_miles:
+          type: integer
+        routes:
+          type: array
+          items:
+            $ref: '#/components/schemas/Route'
+        recommended_route_id:
+          type: string
+          nullable: true
+        recommendation_reason:
+          type: string
+        warnings:
+          type: array
+          items:
+            type: string
+      required:
+      - departure_at
+      - destination
+      - id
+      - load_weight_lb
+      - origin
+      - recommendation_reason
+      - recommended_route_id
+      - routes
+      - sample_interval_miles
+      - warnings
+    RiskLevelEnum:
+      enum:
+      - -1
+      - 0
+      - 1
+      - 2
+      - 3
+      - 4
+      type: integer
+      description: |-
+        * `-1` - Unknown
+        * `0` - Low
+        * `1` - Moderate
+        * `2` - High
+        * `3` - Severe
+        * `4` - No Travel
+    Route:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        distance_miles:
+          type: number
+          format: double
+        duration_seconds:
+          type: integer
+        arrival_at:
+          type: string
+          format: date-time
+        geometry:
+          type: array
+          items:
+            type: array
+            items:
+              type: number
+              format: double
+            maxItems: 2
+            minItems: 2
+        checkpoints:
+          type: array
+          items:
+            $ref: '#/components/schemas/Checkpoint'
+        segments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Segment'
+        summary:
+          $ref: '#/components/schemas/RouteSummary'
+      required:
+      - arrival_at
+      - checkpoints
+      - distance_miles
+      - duration_seconds
+      - geometry
+      - id
+      - name
+      - segments
+      - summary
+    RouteSummary:
+      type: object
+      properties:
+        miles_by_risk:
+          type: object
+          additionalProperties:
+            type: number
+            format: double
+        average_risk:
+          type: number
+          format: double
+          nullable: true
+        maximum_risk:
+          $ref: '#/components/schemas/RiskLevelEnum'
+        eligible:
+          type: boolean
+      required:
+      - average_risk
+      - eligible
+      - maximum_risk
+      - miles_by_risk
+    SampleIntervalMilesEnum:
+      enum:
+      - 10
+      - 25
+      - 50
+      type: integer
+      description: |-
+        * `10` - 10
+        * `25` - 25
+        * `50` - 50
+    Segment:
+      type: object
+      properties:
+        coordinates:
+          type: array
+          items:
+            type: array
+            items:
+              type: number
+              format: double
+            maxItems: 2
+            minItems: 2
+        risk:
+          $ref: '#/components/schemas/RiskLevelEnum'
+        distance_miles:
+          type: number
+          format: double
+      required:
+      - coordinates
+      - distance_miles
+      - risk
+    TripRequestRequest:
+      type: object
+      properties:
+        origin:
+          type: string
+          minLength: 1
+          maxLength: 200
+        destination:
+          type: string
+          minLength: 1
+          maxLength: 200
+        departure_at:
+          type: string
+          format: date-time
+        load_weight_lb:
+          type: integer
+          maximum: 200000
+          minimum: 0
+        sample_interval_miles:
+          allOf:
+          - $ref: '#/components/schemas/SampleIntervalMilesEnum'
+          default: 25
+      required:
+      - departure_at
+      - destination
+      - load_weight_lb
+      - origin
+servers:
+- url: /api/v1

@@ -1,0 +1,37 @@
+{
+  "name": "spotter",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "frontend"
+  ],
+  "engines": {
+    "node": "^22.12.0 || ^24.0.0"
+  },
+  "scripts": {
+    "setup": "npm ci && uv sync --project backend --frozen && npm run db:migrate",
+    "dev": "concurrently --kill-others --names api,web npm:dev:api npm:dev:web",
+    "dev:api": "uv run --project backend python backend/manage.py runserver 127.0.0.1:8000",
+    "dev:web": "npm run dev --workspace @spotter/web",
+    "build": "npm run build --workspace @spotter/web",
+    "lint": "npm run lint --workspace @spotter/web && uv run --project backend ruff check backend",
+    "typecheck": "npm run typecheck --workspace @spotter/web && npm exec --workspace @spotter/web -- tsc -p ../tsconfig.tools.json",
+    "format": "prettier --write . && uv run --project backend ruff format backend",
+    "format:check": "prettier --check . && uv run --project backend ruff format --check backend",
+    "test": "uv run --project backend pytest -c backend/pyproject.toml && npm run test --workspace @spotter/web",
+    "test:e2e": "npm run build && playwright test",
+    "db:migrate": "uv run --project backend python backend/manage.py migrate",
+    "api:schema": "uv run --project backend python backend/manage.py spectacular --file backend/openapi.yaml --validate --fail-on-warn",
+    "api:types": "openapi-typescript backend/openapi.yaml --array-length -o frontend/src/lib/api/schema.d.ts",
+    "api:generate": "npm run api:schema && npm run api:types",
+    "api:check": "node scripts/check-api-contract.mjs",
+    "check:django": "uv run --project backend python backend/manage.py check && uv run --project backend python backend/manage.py makemigrations --check --dry-run",
+    "check": "npm run lint && npm run format:check && npm run typecheck && npm run check:django && npm test && npm run api:check && npm run build"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.64.1",
+    "concurrently": "^10.0.6",
+    "openapi-typescript": "^7.13.0",
+    "prettier": "^3.9.10"
+  }
+}
