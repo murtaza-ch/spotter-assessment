@@ -422,6 +422,7 @@ export function PlannerWorkspace() {
               </HStack>
               {weatherVisible && (
                 <ForecastSlider
+                  key={plan.id}
                   forecast={forecast.data}
                   hour={forecastHour}
                   onHourChange={setForecastHour}
