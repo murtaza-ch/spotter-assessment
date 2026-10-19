@@ -1,5 +1,7 @@
 # Spotter
 
+[Live application](https://spotter-assessment-production-c72e.up.railway.app) · [API reference](https://spotter-assessment-production-c72e.up.railway.app/api/docs/)
+
 Weather-aware truck route comparison built with React, TypeScript, Vite, Chakra UI,
 Django REST Framework, SQLite, TomTom, Open-Meteo, and MapLibre.
 

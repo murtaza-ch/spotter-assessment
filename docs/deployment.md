@@ -1,6 +1,10 @@
 # Railway deployment
 
+Application: https://spotter-assessment-production-c72e.up.railway.app
+
 Repository: https://github.com/murtaza-ch/spotter-assessment
+
+Railway project: https://railway.com/project/d5dd38c9-e802-4822-a1c0-dbc76861233e
 
 GitHub Actions is disabled. Railway builds the root Dockerfile directly from GitHub;
 no GitHub-hosted runner is involved. Run `npm run check` and `npm run test:e2e` locally
@@ -46,6 +50,9 @@ After deployment, check the public homepage, `/api/v1/health/`, and `/api/docs/`
 Chicago to Detroit with a future departure and verify route alternatives, checkpoint
 popups, basemap tiles, and all 49 corridor forecast frames. Confirm that the database
 file is on the mounted volume before relying on persistence across redeploys.
+
+The live smoke check passed for all three routes, 13/14/15 route checkpoints, 49 forecast
+frames across 109 locations, geocoding, map tiles, the homepage, health, and API docs.
 
 The local production test covers frontend and asset serving, the trusted HTTPS header,
 HTTP-to-HTTPS redirection, the liveness exemption, and rejecting untrusted hosts.

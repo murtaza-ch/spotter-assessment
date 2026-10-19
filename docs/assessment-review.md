@@ -64,12 +64,10 @@ all-route map data, popup reopening, forecast retry, and WebGL failure.
 Repeatable tests use synthetic transport fixtures. The local live smoke check uses TomTom
 and Open-Meteo for Chicago to Detroit, including all three alternatives and forecast frames.
 
-## Outstanding submission deliverables
+## Submission deliverables
 
-| Deliverable        | Current state                                                                  | Remaining action                                                 |
-| ------------------ | ------------------------------------------------------------------------------ | ---------------------------------------------------------------- |
-| GitHub repository  | Private repository created at https://github.com/murtaza-ch/spotter-assessment | Push the reviewed code; GitHub Actions is disabled               |
-| Hosted application | Runs locally; production settings and deployment commands documented           | Railway service setup in progress; deploy and smoke-test         |
-| 5-10 minute Loom   | [Walkthrough outline](walkthrough.md) ready                                    | Record the application and explanation, then attach the Loom URL |
-
-These deliverables are not complete merely because the application passes local tests.
+| Deliverable        | Current state                                                                                                                                                         | Remaining action                                                 |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| GitHub repository  | [Private repository](https://github.com/murtaza-ch/spotter-assessment) published on `main`; Actions disabled                                                          | Grant the assessment reviewer access if needed                   |
+| Hosted application | [Railway deployment](https://spotter-assessment-production-c72e.up.railway.app) with persistent SQLite; live route, forecast, map, health, and API docs checks passed | Ready for review                                                 |
+| 5-10 minute Loom   | [Walkthrough outline](walkthrough.md) ready                                                                                                                           | Record the application and explanation, then attach the Loom URL |
